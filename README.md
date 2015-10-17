@@ -1,2 +1,4 @@
-# yaml_rulz
-Yaml validator
+YAML Rulz!
+==========
+
+A YAML validator which keeps the original structure in the schema file (template) as well.
