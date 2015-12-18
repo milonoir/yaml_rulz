@@ -1,53 +1,47 @@
-# -*- coding: utf-8 -*-
-
-from collections import defaultdict
 import re
 
 
-NUMBER_REGEXP = r"\d+"
+RE_NUMBER = r"\d+"
+RE_EOL = r"$"
+RE_LIST_TYPE = r"(^|{0})(\d+)({0}|$)"
+RE_LIST_ITEM_SPLITTER = r"(^.*{0})(.*$)"
 
 
 class ListHandler(object):
 
-    def __init__(self, flat_yml, separator, has_prototypes):
-        self._separator = separator
-        self._list_item_regexp = re.escape(separator) + NUMBER_REGEXP
-        self.list_types = self._filter_list_types(flat_yml)
+    def __init__(self, flat_yml, separator):
+        self.separator = separator
+        self.list_item_regexp = re.escape(separator) + RE_NUMBER
+        self.list_type_regexp = RE_LIST_TYPE.format(separator)
+        self.list_types = dict(self._filter_list_types(flat_yml))
         self.groups = self._generate_groups()
-        self.prototypes = self._generate_prototypes() if has_prototypes else []
-
-    def get_all_prototypes_for_path(self, path):
-        return self.prototypes.get(self._indices_to_numbers(path), [])
-
-    def get_matching_prototypes(self, path, items):
-        candidates = self.get_all_prototypes_for_path(path)
-        return [prototype for prototype in candidates if sorted(prototype.keys()) == sorted(items.keys())]
-
-    def iterate_groups(self):
-        for path, lists in self.groups.items():
-            for index, single_list in lists.items():
-                yield path, index, single_list
 
     def _filter_list_types(self, flat_yml):
-        return {key: value for key, value in flat_yml.items() if self._is_list_type(key)}
-
-    def _is_list_type(self, key):
-        return True if re.search(self._list_item_regexp, key) else False
-
-    def _indices_to_numbers(self, string):
-        return re.sub(self._list_item_regexp, self._separator + NUMBER_REGEXP, string)
-
-    def _generate_prototypes(self):
-        prototypes = defaultdict(list)
-        for path, _, single_list in self.iterate_groups():
-            regexp_path = self._indices_to_numbers(path)
-            prototypes[regexp_path].append(single_list)
-        return prototypes
+        for key, value in flat_yml.items():
+            if re.search(self.list_type_regexp, key):
+                yield key, value
 
     def _generate_groups(self):
-        result = defaultdict(lambda: defaultdict(dict))
+        flat_yml_copy = dict(self.list_types.items())
+        groups = {}
         for key, value in self.list_types.items():
-            index = re.findall(self._list_item_regexp, key)
-            path, list_item = key.rsplit(index[-1], 1)
-            result[path][index[-1]][list_item] = value
-        return result
+            if key in flat_yml_copy:
+                parent = self._get_parent_from_key(key)
+                similar_items = self._get_items_starting_with(parent, flat_yml_copy)
+                flat_yml_copy = self._remove_items_from_dict(similar_items, flat_yml_copy)
+                groups[parent] = dict([(key, value) for key, value in similar_items])
+        return groups
+
+    def _get_items_starting_with(self, parent, flat_yaml):
+        return [(key, value) for key, value in flat_yaml.items()
+                if parent == self._get_parent_from_key(key)]
+
+    def _get_parent_from_key(self, key):
+        return re.split(RE_LIST_ITEM_SPLITTER.format(self.list_item_regexp), key)[1]
+
+    @staticmethod
+    def _remove_items_from_dict(removable, target_dict):
+        for item in removable:
+            if item[0] in target_dict:
+                del target_dict[item[0]]
+        return target_dict

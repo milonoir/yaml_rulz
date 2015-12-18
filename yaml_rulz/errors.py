@@ -1,4 +1,4 @@
-class PrototypeFail(Exception):
+class RuleError(Exception):
     pass
 
 

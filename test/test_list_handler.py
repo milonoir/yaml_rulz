@@ -1,75 +1,80 @@
-# -*- coding: utf-8 -*-
-
 from unittest import TestCase
-import sys
 
 from yaml_rulz.list_handler import ListHandler
 
 
-SEPARATOR = ":"
-
-FLAT_YAML = {
-    "root:not_a_list": "foo",
-    "root:simple_list:0:name": "John Doe",
-    "root:simple_list:0:email": "john@doe.gov",
-    "root:simple_list:1:name": "Jane Doe",
-    "root:simple_list:1:skype": "janedoe",
-    "root:nested:but_not_a_list": "bar",
+TEST_FLAT_YML_LIST_TYPES = {
+    "ericsson:shelf:0:id": "@ num",
+    "ericsson:shelf:0:management:address": "@ ipv4",
+    "ericsson:shelf:0:management:username": "username",
+    "ericsson:shelf:0:management:password": "password",
+    "ericsson:shelf:0:blade": [],
+    "ericsson:shelf:0:blade:0:id": "@ num",
+    "ericsson:shelf:0:blade:0:nic_assignment": "~ whatever",
+    "ericsson:shelf:0:blade:1:id": "@ num",
+    "ericsson:shelf:0:blade:1:nic_assignment": "~ whatever",
+    "ericsson:shelf:0:blade:1:cic:id": "@ num",
+    "ericsson:shelf:0:blade:2:id": "@ num",
+    "ericsson:shelf:0:blade:2:nic_assignment": "~ whatever",
+    "ericsson:shelf:0:blade:2:cic:id": "@ num",
+    "ericsson:shelf:0:blade:2:cinder": "",
+    "ericsson:shelf:1:id": "@ num",
+    "ericsson:shelf:1:blade": [],
+    "ericsson:shelf:1:blade:0:id": "@ num",
+    "ericsson:shelf:1:blade:0:nic_assignment": "~ whatever",
+    "ericsson:simple_list:0": "~ foo",
+    "ericsson:simple_list:1": "~ bar",
 }
-
-LIST_TYPES = {
-    "root:simple_list:0:name": "John Doe",
-    "root:simple_list:0:email": "john@doe.gov",
-    "root:simple_list:1:name": "Jane Doe",
-    "root:simple_list:1:skype": "janedoe",
+TEST_FLAT_YML_SCALARS = {
+    "ericsson:shelf": [],
 }
-
-GROUPS = {
-    "root:simple_list": {
-        ":0": {
-            ":name": "John Doe",
-            ":email": "john@doe.gov",
-        },
-        ":1": {
-            ":name": "Jane Doe",
-            ":skype": "janedoe",
-        }
-    }
-}
-
-PROTOTYPES = [
-    {
-        ":email": "john@doe.gov",
-        ":name": "John Doe"
+TEST_FLAT_YML = TEST_FLAT_YML_SCALARS.copy()
+TEST_FLAT_YML.update(TEST_FLAT_YML_LIST_TYPES)
+TEST_GROUPS = {
+    "ericsson:shelf:0": {
+        "ericsson:shelf:0:id": "@ num",
+        "ericsson:shelf:0:blade": [],
+        "ericsson:shelf:0:management:address": "@ ipv4",
+        "ericsson:shelf:0:management:password": "password",
+        "ericsson:shelf:0:management:username": "username",
     },
-    {
-        ":name": "Jane Doe",
-        ":skype": "janedoe"
-    }
-]
+    "ericsson:shelf:1": {
+        "ericsson:shelf:1:id": "@ num",
+        "ericsson:shelf:1:blade": [],
+    },
+    "ericsson:shelf:0:blade:0": {
+        "ericsson:shelf:0:blade:0:nic_assignment": "~ whatever",
+        "ericsson:shelf:0:blade:0:id": "@ num",
+    },
+    "ericsson:shelf:0:blade:1": {
+        "ericsson:shelf:0:blade:1:nic_assignment": "~ whatever",
+        "ericsson:shelf:0:blade:1:id": "@ num",
+        "ericsson:shelf:0:blade:1:cic:id": "@ num",
+    },
+    "ericsson:shelf:0:blade:2": {
+        "ericsson:shelf:0:blade:2:nic_assignment": "~ whatever",
+        "ericsson:shelf:0:blade:2:cinder": "",
+        "ericsson:shelf:0:blade:2:id": "@ num",
+        "ericsson:shelf:0:blade:2:cic:id": "@ num",
+    },
+    "ericsson:shelf:1:blade:0": {
+        "ericsson:shelf:1:blade:0:nic_assignment": "~ whatever",
+        "ericsson:shelf:1:blade:0:id": "@ num",
+    },
+    "ericsson:simple_list:0": {
+        "ericsson:simple_list:0": "~ foo",
+    },
+    "ericsson:simple_list:1": {
+        "ericsson:simple_list:1": "~ bar",
+    },
+}
 
 
 class TestListHandler(TestCase):
 
-    def test_list_handler_without_prototypes_generation(self):
-        handler = ListHandler(FLAT_YAML, SEPARATOR, False)
-        self.assertEqual(LIST_TYPES, handler.list_types)
-        self.assertEqual(GROUPS, handler.groups)
-        self.assertEqual([], handler.prototypes)
+    def setUp(self):
+        self.handler = ListHandler(TEST_FLAT_YML, ":")
 
-    def test_list_handler_finds_all_prototypes_for_path(self):
-        handler = ListHandler(FLAT_YAML, SEPARATOR, True)
-        self.__assert_lists_equal(PROTOTYPES, handler.get_all_prototypes_for_path("root:simple_list"))
-
-    def test_list_handler_finds_prototypes_for_path_and_items(self):
-        handler = ListHandler(FLAT_YAML, SEPARATOR, True)
-        find_this = {
-            ":name": "", ":email": ""
-        }
-        self.__assert_lists_equal([PROTOTYPES[0]], handler.get_matching_prototypes("root:simple_list", find_this))
-
-    def __assert_lists_equal(self, expected, tested):
-        if sys.version_info[0] == 3 and sys.version_info[1] >= 1:
-            self.assertListEqual(expected, tested)
-        else:
-            self.assertItemsEqual(expected, tested)
+    def test_list_handler_init(self):
+        self.assertEqual(TEST_FLAT_YML_LIST_TYPES, self.handler.list_types)
+        self.assertEqual(TEST_GROUPS, self.handler.groups)

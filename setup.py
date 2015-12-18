@@ -14,12 +14,12 @@ setup(
     maintainer_email="bmilan1985@gmail.com",
     url="https://github.com/milonoir/yaml_rulz",
     packages=["yaml_rulz"],
-    install_requires=["PyYAML"],
-    tests_require=["mock", "testfixtures"],
+    install_requires=["PyYAML", "prettytable"],
+    tests_require=["mock"],
     classifiers=[
-        "Development Status :: 1 - Planning",
+        # "Development Status :: 1 - Planning",
         # "Development Status :: 2 - Pre-Alpha",
-        # "Development Status :: 3 - Alpha",
+        "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
         # "Development Status :: 5 - Production/Stable",
         # "Development Status :: 6 - Mature",
@@ -35,7 +35,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            # "yaml_rulz = yaml_rulz.cli:main",
+            "yaml_rulz = yaml_rulz.cli:main",
         ],
     },
 )
