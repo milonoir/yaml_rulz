@@ -126,14 +126,18 @@ stdout:
 
 If `raw` flag is set, then results are printed to stdout in JSON format:
 
-```json
-[{'criterion': '1500',
-  'message': 'Value must be less than criterion',
-  'ref': False,
-  'resource': 'root:less_than_rule',
-  'severity': 'Error',
-  'template': 'root:less_than_rule',
-  'value': 1500}]
+```javascript
+[
+  {
+    'criterion': '1500',
+    'message': 'Value must be less than criterion',
+    'ref': false,
+    'resource': 'root:less_than_rule',
+    'severity': 'Error',
+    'template': 'root:less_than_rule',
+    'value': 1500
+  }
+]
 ```
 
 Explanation:
