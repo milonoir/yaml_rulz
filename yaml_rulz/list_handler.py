@@ -24,7 +24,7 @@ class ListHandler(object):
     def _generate_groups(self):
         flat_yml_copy = dict(self.list_types.items())
         groups = {}
-        for key, value in self.list_types.items():
+        for key in self.list_types:
             if key in flat_yml_copy:
                 parent = self._get_parent_from_key(key)
                 similar_items = self._get_items_starting_with(parent, flat_yml_copy)

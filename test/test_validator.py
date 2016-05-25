@@ -70,7 +70,9 @@ class TestValidator(TestCase):
         try:
             self.assertItemsEqual(ISSUES, issues)
         except AttributeError:
-            self.assertListEqual(ISSUES, issues)
+            self.assertEqual(len(ISSUES), len(issues))
+            for issue in ISSUES:
+                self.assertIn(issue, issues)
 
     @staticmethod
     def __create_validator_and_get_result(resource, exclusions=None):

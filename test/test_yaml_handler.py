@@ -1,6 +1,9 @@
 from unittest import TestCase
 
-from mock import patch
+try:
+    from mock import patch
+except ImportError:
+    from unittest.mock import patch
 
 from yaml_rulz.yaml_handler import YAMLHandlerBase
 from yaml_rulz.yaml_handler import YAMLHandlerError

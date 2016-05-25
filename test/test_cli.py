@@ -5,7 +5,12 @@ except ImportError:
 
 from unittest import TestCase
 
-from mock import patch, mock_open
+try:
+    from mock import mock_open
+    from mock import patch
+except ImportError:
+    from unittest.mock import mock_open
+    from unittest.mock import patch
 
 from yaml_rulz.cli import main
 from yaml_rulz.errors import YAMLHandlerError
