@@ -1,5 +1,10 @@
-YAML validator
-==============
+YAML Rulz!
+==========
+
+A YAML validator written in Python.
+
+[![][travis img]][travis]
+[![][codecov img]][codecov]
 
 Check the validity of your yaml files in three steps:
 
@@ -151,3 +156,20 @@ code 1 if there is at least one issue with `Error` severity.
 - __Value__: Value for the resource key.
 - __Ref__: If there is an asterisk (`*`) here, then criterion is taken from a cross referenced resource key and
 `Template` field indicates which.
+
+
+License
+-------
+YAML Rulz! is made available under the [MIT License].
+
+
+Credits
+-------
+YAML Rulz! is written and managed by Milan Boleradszki.
+
+
+[travis]:https://travis-ci.org/milonoir/yaml_rulz
+[travis img]:https://api.travis-ci.org/milonoir/yaml_rulz.svg?branch=master
+[codecov img]:https://codecov.io/github/milonoir/yaml_rulz/coverage.svg?branch=master
+[codecov]:https://codecov.io/github/milonoir/yaml_rulz?branch=master
+[MIT License]:http://www.opensource.org/licenses/mit-license.php
