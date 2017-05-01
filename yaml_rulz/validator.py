@@ -143,8 +143,7 @@ class YAMLValidator(object):
         else:
             if token in self.known_rule_tokens:
                 return self.known_rule_tokens[token](template_key, resource_key, criterion)
-            else:
-                return OmitRule(template_key, resource_key, None)
+            return OmitRule(template_key, resource_key, None)
 
     @staticmethod
     def _yield_missing_scalar_error(outer_handler, inner_handler, message):
@@ -160,8 +159,7 @@ class YAMLValidator(object):
     def _import_exclusions(exclusions_content):
         if not exclusions_content:
             return []
-        else:
-            return [exc.strip() for exc in exclusions_content.splitlines() if exc]
+        return [exc.strip() for exc in exclusions_content.splitlines() if exc]
 
     @staticmethod
     def _split_rules(rule_chain):

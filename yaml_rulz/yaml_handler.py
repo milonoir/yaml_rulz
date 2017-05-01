@@ -10,15 +10,17 @@ class YAMLHandlerBase(object):
 
     def __init__(self, yml_content, separator=":"):
         self.separator = separator
-        self.dict_yml = self._import_yml(yml_content)
-        self.flat_yml = self._get_flat_dict()
+        parsed_yml = self._import_yml(yml_content)
+        self.flat_yml = self._get_flat_dict(parsed_yml)
         self.list_handler = ListHandler(self.flat_yml, separator)
         self.scalars = dict(
             [(key, value) for key, value in self.flat_yml.items() if key not in self.list_handler.list_types]
         )
 
-    def _get_flat_dict(self):
-        return dict(self._flatten_items(self.dict_yml.items(), parent=""))
+    def _get_flat_dict(self, parsed_yml):
+        if isinstance(parsed_yml, dict):
+            return dict(self._flatten_items(parsed_yml.items(), parent=""))
+        return dict(self._flatten_items([("", parsed_yml)], parent=""))
 
     def _flatten_items(self, items, parent):
         flattened_items = []
