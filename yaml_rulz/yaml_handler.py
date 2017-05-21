@@ -42,9 +42,9 @@ class YAMLHandlerBase(object):
             raise YAMLHandlerError("Error in {0}\n{1}".format(self.role, exc))
 
 
-class TemplateHandler(YAMLHandlerBase):
+class SchemaHandler(YAMLHandlerBase):
 
-    role = "template"
+    role = "schema"
 
 
 class ResourceHandler(YAMLHandlerBase):

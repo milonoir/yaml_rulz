@@ -17,22 +17,22 @@ from yaml_rulz.errors import YAMLHandlerError
 
 
 DUMMY_FILE_CONTENT = "dummy"
-EMPTY_TABLE = """+----------+---------+----------+-----------+----------+-------+-----+
-| Severity | Message | Template | Criterion | Resource | Value | Ref |
-+----------+---------+----------+-----------+----------+-------+-----+
-+----------+---------+----------+-----------+----------+-------+-----+
+EMPTY_TABLE = """+----------+---------+--------+-----------+----------+-------+-----+
+| Severity | Message | Schema | Criterion | Resource | Value | Ref |
++----------+---------+--------+-----------+----------+-------+-----+
++----------+---------+--------+-----------+----------+-------+-----+
 """
 EMPTY_RAW = """[]
 """
 TABLE_WITH_ISSUE = """+----------+-----------------------------------+---------------------+-----------+---------------\
 ------+-------+-----+
-| Severity | Message                           | Template            | Criterion | Resource            | Value | Ref |
+| Severity | Message                           | Schema              | Criterion | Resource            | Value | Ref |
 +----------+-----------------------------------+---------------------+-----------+---------------------+-------+-----+
 | Error    | Value must be less than criterion | root:less_than_rule | 1500      | root:less_than_rule | 1500  |     |
 +----------+-----------------------------------+---------------------+-----------+---------------------+-------+-----+
 """
 RAW_WITH_ISSUE = '[\n  {\n    "resource": "root:less_than_rule", \n    "severity": "Error", \n    "value": 1500, \n' \
-                 '    "criterion": "1500", \n    "template": "root:less_than_rule", \n    "message": "Value must be ' \
+                 '    "criterion": "1500", \n    "schema": "root:less_than_rule", \n    "message": "Value must be ' \
                  'less than criterion", \n    "ref": false\n  }\n]\n'
 ISSUE = [
     {
@@ -41,7 +41,7 @@ ISSUE = [
         "ref": False,
         "resource": "root:less_than_rule",
         "severity": "Error",
-        "template": "root:less_than_rule",
+        "schema": "root:less_than_rule",
         "value": 1500,
     },
 ]
@@ -49,13 +49,13 @@ ISSUE = [
 
 class ArgsNameSpace(object):
 
-    template = None
+    schema = None
     resource = None
     exclusions = None
     raw = None
 
-    def __init__(self, template, resource, exclusions=None, raw=False):
-        self.template = template
+    def __init__(self, schema, resource, exclusions=None, raw=False):
+        self.schema = schema
         self.resource = resource
         self.exclusions = exclusions
         self.raw = raw
@@ -81,22 +81,22 @@ class TestCLI(TestCase):
         self.file_open_patcher.stop()
 
     def test_cli_prints_empty_table_when_no_issues(self):
-        self.__setup_mocks(ArgsNameSpace("template", "resource"), (False, []))
+        self.__setup_mocks(ArgsNameSpace("schema", "resource"), (False, []))
         main()
         self.assertEqual(EMPTY_TABLE, self.stdout_mock.getvalue())
 
     def test_cli_prints_raw_empty_list_when_no_issues(self):
-        self.__setup_mocks(ArgsNameSpace("template", "resource", None, True), (False, []))
+        self.__setup_mocks(ArgsNameSpace("schema", "resource", None, True), (False, []))
         main()
         self.assertEqual(EMPTY_RAW, self.stdout_mock.getvalue())
 
     def test_cli_prints_issues_in_table(self):
-        self.__setup_mocks(ArgsNameSpace("template", "resource"), (True, ISSUE))
+        self.__setup_mocks(ArgsNameSpace("schema", "resource"), (True, ISSUE))
         self.assertRaises(SystemExit, main)
         self.assertEqual(TABLE_WITH_ISSUE, self.stdout_mock.getvalue())
 
     def test_cli_prints_issues_in_raw_format(self):
-        self.__setup_mocks(ArgsNameSpace("template", "resource", None, True), (True, ISSUE))
+        self.__setup_mocks(ArgsNameSpace("schema", "resource", None, True), (True, ISSUE))
         self.assertRaises(SystemExit, main)
         self.assertEqual(
             sorted([line.strip(", ") for line in RAW_WITH_ISSUE.splitlines()]),
@@ -105,7 +105,7 @@ class TestCLI(TestCase):
 
     def test_cli_handles_validator_exceptions(self):
         self.validator_mock.side_effect = YAMLHandlerError
-        self.argparser_mock.return_value.parse_args.return_value = ArgsNameSpace("template", "resource")
+        self.argparser_mock.return_value.parse_args.return_value = ArgsNameSpace("schema", "resource")
         self.assertRaises(SystemExit, main)
         self.assertFalse(self.validator_mock.return_value.get_validation_issues.called)
 

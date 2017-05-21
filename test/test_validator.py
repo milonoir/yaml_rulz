@@ -3,7 +3,7 @@ from unittest import TestCase
 from yaml_rulz.validator import YAMLValidator
 
 
-TEMPLATE_CONTENT = r"""
+SCHEMA_CONTENT = r"""
 ---
 root:
   key_a: "~ exactly this"
@@ -36,21 +36,21 @@ ISSUES = [
      "severity": "Warning",
      "value": "exactly that",
      "criterion": "exactly this",
-     "template": "root:key_a",
+     "schema": "root:key_a",
      "message": "Regular expression mismatch", "ref": False},
     {"criterion": 6,
      "message": "Value must be greater than criterion",
      "ref": True,
      "resource": "root:key_c",
      "severity": "Error",
-     "template": "root:key_b",
+     "schema": "root:key_b",
      "value": 2},
     {"criterion": "15",
      "message": "Value must be greater than criterion",
      "ref": False,
      "resource": "root:key_b",
      "severity": "Error",
-     "template": "root:key_b",
+     "schema": "root:key_b",
      "value": 6},
 ]
 
@@ -76,5 +76,5 @@ class TestValidator(TestCase):
 
     @staticmethod
     def __create_validator_and_get_result(resource, exclusions=None):
-        validator = YAMLValidator(TEMPLATE_CONTENT, resource, exclusions)
+        validator = YAMLValidator(SCHEMA_CONTENT, resource, exclusions)
         return validator.get_validation_issues()

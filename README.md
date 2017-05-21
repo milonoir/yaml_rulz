@@ -8,9 +8,9 @@ A YAML validator written in Python.
 
 Check the validity of your yaml files in three steps:
 
-1. Create new yaml template files or turn your yaml file resources into templates by using simple rules without
+1. Create new yaml schema files or turn your yaml files into schemas by using simple rules without
 breaking the original structure.
-2. Create your yaml resources. (Optionally, exclude certain keys or subsections from validation.)
+2. Optionally, exclude certain keys or subsections from validation.
 3. Run the validator.
 
 
@@ -20,11 +20,11 @@ Terminology
 - Key: In a yaml structure a key identifies a node (or leaf) in the tree structure.
 - Value: The data stored in yaml keys.
 - List items: Denoted by a hyphen (`-`) it can be a set of single values without keys or subsections (subtrees).
-- Rules: Simple strings parsed by the validator.
-- Template: A special yaml file where the values are rules.
+- Rules: Special string values parsed by the validator.
+- Schema: A special yaml file where the values are rules.
 - Resource: A common yaml file whose validity is checked by the validator.
-- Exclusions: Keys or subsections in the resources whose validity will not be checked.
-- Prototypes: List items in templates; resource list items should match one of these.
+- Exclusions: List of keys or subsections in the resource whose validity will not be checked.
+- Prototypes: List items in schemas; resource list items should match one of these.
 
 
 Rules
@@ -70,12 +70,12 @@ by using their values as criteria (just like how __Uniqueness__ works). The vali
 Exclusions
 ----------
 
-It is possible that there are minor deviations between resources for a given template. In this case certain subsections
+It is possible that there are minor deviations between resources for a given schema. In this case certain subsections
 might fail in the validation. The validator, however, can be configured not to fail. Validation issues for keys or
 subsections matching to regular expressions listed in a so-called __exclusions file__ will count as warnings instead
 of errors. The validator returns with exit code 0 if there were only warnings.
 
-Consider the following template:
+Consider the following schema:
 
 ```yaml
 ---
@@ -88,7 +88,7 @@ base:
    location: "* location of section B"
 ```
 
-For example one of your resources lacks `section_b` for some reason. Since the template contains it the validator
+For example one of your resources lacks `section_b` for some reason. Since the schema contains it the validator
 would think that it is missing. To prevent this validation error you have to pass an exclusion file to the validator
 in which you put a regular expression matching `section_b`:
 
@@ -109,7 +109,7 @@ Note that the colon character (`:`) is the default separator in the yaml handler
 List validation
 ---------------
 
-List types are handled differently. Each list item in the template will be a __prototype__ item of that list it
+List types are handled differently. Each list item in the schema will be a __prototype__ item of that list it
 belongs to. A prototype is also a bunch of key-value pairs, thus the values contain rules. When the validator
 encounters the same list in the resource it tries to find a matching prototype. First it looks if there is a prototype
 with the same key set, then rule validation follows. The order or list item validation might be different each time.
@@ -123,7 +123,7 @@ stdout:
 
 ```
 +----------+-----------------------------------+---------------------+-----------+---------------------+-------+-----+
-| Severity | Message                           | Template            | Criterion | Resource            | Value | Ref |
+| Severity | Message                           | Schema              | Criterion | Resource            | Value | Ref |
 +----------+-----------------------------------+---------------------+-----------+---------------------+-------+-----+
 | Error    | Value must be less than criterion | root:less_than_rule | 1500      | root:less_than_rule | 1500  |     |
 +----------+-----------------------------------+---------------------+-----------+---------------------+-------+-----+
@@ -139,7 +139,7 @@ If `raw` flag is set, then results are printed to stdout in JSON format:
     'ref': false,
     'resource': 'root:less_than_rule',
     'severity': 'Error',
-    'template': 'root:less_than_rule',
+    'schema': 'root:less_than_rule',
     'value': 1500
   }
 ]
@@ -150,12 +150,12 @@ Explanation:
 - __Severity__: `Error` or `Warning` depending on whether resource key is excluded or not. Validator returns with exit
 code 1 if there is at least one issue with `Error` severity.
 - __Message__: Textual explanation of the issue.
-- __Template__: Key in the template file.
+- __Schema__: Key in the schema file.
 - __Criterion__: Validation was performed against this value.
 - __Resource__: Key in the resource file.
 - __Value__: Value for the resource key.
 - __Ref__: If there is an asterisk (`*`) here, then criterion is taken from a cross referenced resource key and
-`Template` field indicates which.
+`Schema` field indicates which.
 
 
 License

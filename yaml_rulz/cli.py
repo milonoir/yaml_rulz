@@ -11,12 +11,12 @@ from yaml_rulz.errors import YAMLHandlerError
 from yaml_rulz.validator import YAMLValidator
 
 
-TABLE_HEADER = ["Severity", "Message", "Template", "Criterion", "Resource", "Value", "Ref"]
+TABLE_HEADER = ["Severity", "Message", "Schema", "Criterion", "Resource", "Value", "Ref"]
 
 
 def main():
     args = __parse_arguments()
-    has_errors, issues = __read_files_and_call_validator(args.template, args.resource, args.exclusions)
+    has_errors, issues = __read_files_and_call_validator(args.schema, args.resource, args.exclusions)
     if args.raw:
         print(json.dumps(issues, indent=2))
     else:
@@ -38,12 +38,12 @@ def __print_error_report(issues):
     print(table)
 
 
-def __read_files_and_call_validator(template_file, resource_file, exclusions_file):
-    template = __read_file(template_file)
+def __read_files_and_call_validator(schema_file, resource_file, exclusions_file):
+    schema = __read_file(schema_file)
     resource = __read_file(resource_file)
     exclusions = __read_file(exclusions_file) if exclusions_file else None
     try:
-        validator = YAMLValidator(template, resource, exclusions)
+        validator = YAMLValidator(schema, resource, exclusions)
     except YAMLHandlerError as exc:
         print(exc)
         sys.exit(1)
@@ -53,7 +53,7 @@ def __read_files_and_call_validator(template_file, resource_file, exclusions_fil
 
 def __parse_arguments():
     argument_parser = ArgumentParser(prog="yaml_rulz")
-    argument_parser.add_argument("template", help="YAML template file")
+    argument_parser.add_argument("schema", help="YAML schema file")
     argument_parser.add_argument("resource", help="YAML resource file to be validated")
     argument_parser.add_argument("-x", "--exclusions", help="Exclusions file (optional)")
     argument_parser.add_argument("-r", "--raw", help="Prints the raw error dictionary", action="store_true")

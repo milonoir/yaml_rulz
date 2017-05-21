@@ -189,7 +189,7 @@ class TestRulebook(TestCase):
     @staticmethod
     def __generate_rule_error_dict(rule, resource):
         return {
-            "template": RULE_KEY,
+            "schema": RULE_KEY,
             "resource": RULE_KEY,
             "criterion": rule.criterion,
             "value": resource.get(RULE_KEY),
@@ -201,7 +201,7 @@ class TestRulebook(TestCase):
     @staticmethod
     def __generate_referred_rule_error_dict(rule, resource):
         return {
-            "template": REFERRED_KEY,
+            "schema": REFERRED_KEY,
             "resource": RULE_KEY,
             "criterion": resource.get(REFERRED_KEY),
             "value": resource.get(RULE_KEY),

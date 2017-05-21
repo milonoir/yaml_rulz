@@ -10,12 +10,12 @@ from yaml_rulz.rulebook import PredefinedRegExpRule
 from yaml_rulz.rulebook import RegExpRule
 from yaml_rulz.rulebook import UniquenessRule
 from yaml_rulz.yaml_handler import ResourceHandler
-from yaml_rulz.yaml_handler import TemplateHandler
+from yaml_rulz.yaml_handler import SchemaHandler
 
 
 WARNING_SEVERITY = "Warning"
 MISSING_RESOURCE = "Item is missing from resource"
-MISSING_TEMPLATE = "No rules were found for resource"
+MISSING_SCHEMA = "No rules were found for resource"
 MISSING_PROTOTYPE = "No matching prototype was found"
 RULE_SEPARATOR_REGEXP = r"\s+\|\s+"
 EOL_REGEXP = r"$"
@@ -33,15 +33,15 @@ class YAMLValidator(object):
         "!": UniquenessRule,
     }
 
-    def __init__(self, template_content, resource_content, exclusions_content=None):
-        self.template_handler = TemplateHandler(template_content)
+    def __init__(self, schema_content, resource_content, exclusions_content=None):
+        self.schema_handler = SchemaHandler(schema_content)
         self.resource_handler = ResourceHandler(resource_content)
         self.exclusions = YAMLValidator._import_exclusions(exclusions_content)
 
     def get_validation_issues(self):
         issues = [issue for issue in chain(
             self._find_missing_resource_scalars(),
-            self._find_missing_template_scalars(),
+            self._find_missing_schema_scalars(),
             self._validate_scalars(),
             self._validate_lists(),
         )]
@@ -50,7 +50,7 @@ class YAMLValidator(object):
     def _update_severity(self, issues):
         has_errors = False
         for issue in issues:
-            if self._is_excluded(issue["template"]) or self._is_excluded(issue["resource"]):
+            if self._is_excluded(issue["schema"]) or self._is_excluded(issue["resource"]):
                 issue["severity"] = WARNING_SEVERITY
             else:
                 has_errors = True
@@ -66,32 +66,32 @@ class YAMLValidator(object):
             return False
 
     def _find_missing_resource_scalars(self):
-        for issue in self._yield_missing_scalar_error(self.template_handler,
+        for issue in self._yield_missing_scalar_error(self.schema_handler,
                                                       self.resource_handler,
                                                       MISSING_RESOURCE):
             yield issue
 
-    def _find_missing_template_scalars(self):
+    def _find_missing_schema_scalars(self):
         for issue in self._yield_missing_scalar_error(self.resource_handler,
-                                                      self.template_handler,
-                                                      MISSING_TEMPLATE):
+                                                      self.schema_handler,
+                                                      MISSING_SCHEMA):
             yield issue
 
-    def _validate_rules(self, flat_template, flat_resource):
+    def _validate_rules(self, flat_schema, flat_resource):
         for resource_key in flat_resource:
             key_mask = self._key_to_mask(self.resource_handler, resource_key)
-            for template_key in flat_template:
-                if re.match(key_mask + EOL_REGEXP, template_key):
-                    rule_chain = self._split_rules(flat_template[template_key])
+            for schema_key in flat_schema:
+                if re.match(key_mask + EOL_REGEXP, schema_key):
+                    rule_chain = self._split_rules(flat_schema[schema_key])
                     for rule_expression in rule_chain:
-                        rule = self._get_rule(template_key, resource_key, rule_expression)
+                        rule = self._get_rule(schema_key, resource_key, rule_expression)
                         # Whole resource must be passed to match() because of possible references in rules
                         result = rule.match(self.resource_handler.flat_yml)
                         if result:
                             yield result
 
     def _validate_scalars(self):
-        for result in self._validate_rules(self.template_handler.scalars, self.resource_handler.scalars):
+        for result in self._validate_rules(self.schema_handler.scalars, self.resource_handler.scalars):
             yield result
 
     def _validate_lists(self):
@@ -100,13 +100,13 @@ class YAMLValidator(object):
             path_mask = self._key_to_mask(self.resource_handler, resource_path)
             prototype_candidates = [
                 prototype_groups
-                for template_path, prototype_groups in self.template_handler.list_handler.groups.items()
-                if re.match(path_mask + EOL_REGEXP, template_path)
+                for schema_path, prototype_groups in self.schema_handler.list_handler.groups.items()
+                if re.match(path_mask + EOL_REGEXP, schema_path)
             ]
             prototypes = self._filter_matching_prototypes(resource, prototype_candidates)
             if not prototypes:
                 yield get_rule_response_dict(
-                    template=prototype_candidates,
+                    schema=prototype_candidates,
                     resource=resource_path,
                     message=MISSING_PROTOTYPE,
                 )
@@ -124,33 +124,33 @@ class YAMLValidator(object):
 
     def _filter_matching_prototypes(self, resource, prototypes):
         matching_prototypes = []
-        masked_resource_keys = [self._key_to_mask(self.template_handler, key) for key in resource.keys()]
+        masked_resource_keys = [self._key_to_mask(self.schema_handler, key) for key in resource.keys()]
         for prototype in prototypes:
-            masked_prototype_keys = [self._key_to_mask(self.template_handler, key) for key in prototype.keys()]
+            masked_prototype_keys = [self._key_to_mask(self.schema_handler, key) for key in prototype.keys()]
             if set(masked_prototype_keys) == set(masked_resource_keys):
-                if re.search(self.template_handler.list_handler.list_item_regexp + EOL_REGEXP, list(prototype)[0]):
+                if re.search(self.schema_handler.list_handler.list_item_regexp + EOL_REGEXP, list(prototype)[0]):
                     for key, value in prototype.items():
                         matching_prototypes.append({key: value})
                 else:
                     matching_prototypes.append(prototype)
         return matching_prototypes
 
-    def _get_rule(self, template_key, resource_key, rule_expression):
+    def _get_rule(self, schema_key, resource_key, rule_expression):
         try:
             token, criterion = rule_expression.split(" ", 1)
         except (ValueError, AttributeError):
-            return OmitRule(template_key, resource_key, None)
+            return OmitRule(schema_key, resource_key, None)
         else:
             if token in self.known_rule_tokens:
-                return self.known_rule_tokens[token](template_key, resource_key, criterion)
-            return OmitRule(template_key, resource_key, None)
+                return self.known_rule_tokens[token](schema_key, resource_key, criterion)
+            return OmitRule(schema_key, resource_key, None)
 
     @staticmethod
     def _yield_missing_scalar_error(outer_handler, inner_handler, message):
         for key in outer_handler.scalars:
             if key not in inner_handler.scalars:
                 yield get_rule_response_dict(
-                    template=key if outer_handler.role == "template" else None,
+                    schema=key if outer_handler.role == "schema" else None,
                     resource=key if outer_handler.role == "resource" else None,
                     message=message,
                 )

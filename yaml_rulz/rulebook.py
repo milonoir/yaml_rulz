@@ -41,10 +41,10 @@ def raise_rule_error(func):
     return wrapped
 
 
-def get_rule_response_dict(template=None, resource=None, criterion=None,  # pylint: disable = too-many-arguments
+def get_rule_response_dict(schema=None, resource=None, criterion=None,  # pylint: disable = too-many-arguments
                            value=None, message=None, ref=None):
     return {
-        "template": template,
+        "schema": schema,
         "resource": resource,
         "criterion": criterion,
         "value": value,
@@ -58,8 +58,8 @@ class RuleBase(object):
 
     error_msg = ""
 
-    def __init__(self, template_key, resource_key, criterion):
-        self.template_key = template_key
+    def __init__(self, schema_key, resource_key, criterion):
+        self.schema_key = schema_key
         self.resource_key = resource_key
         self.criterion = str(criterion)
 
@@ -74,19 +74,19 @@ class RuleBase(object):
                 if result:
                     return result
         else:
-            return self._get_evaluation_result(self.template_key, self.resource_key, self.criterion, value, False)
+            return self._get_evaluation_result(self.schema_key, self.resource_key, self.criterion, value, False)
 
-    def _get_evaluation_result(self, template, resource, criterion, value, ref):  # pylint: disable = too-many-arguments
+    def _get_evaluation_result(self, schema, resource, criterion, value, ref):  # pylint: disable = too-many-arguments
         try:
             if not self._evaluate(criterion, value):
-                return get_rule_response_dict(template=template,
+                return get_rule_response_dict(schema=schema,
                                               resource=resource,
                                               criterion=criterion,
                                               value=value,
                                               message=self.error_msg,
                                               ref=ref)
         except RuleError:
-            return get_rule_response_dict(template=template,
+            return get_rule_response_dict(schema=schema,
                                           criterion=criterion,
                                           message=ERROR_IN_CRITERION,
                                           ref=ref)
