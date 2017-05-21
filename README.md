@@ -5,6 +5,7 @@ A YAML validator written in Python.
 
 [![][travis img]][travis]
 [![][codecov img]][codecov]
+[![][pypi img]][pypi]
 
 Check the validity of your yaml files in three steps:
 
@@ -168,8 +169,10 @@ Credits
 YAML Rulz! is written and managed by Milan Boleradszki.
 
 
-[travis]:https://travis-ci.org/milonoir/yaml_rulz
 [travis img]:https://api.travis-ci.org/milonoir/yaml_rulz.svg?branch=master
+[travis]:https://travis-ci.org/milonoir/yaml_rulz
 [codecov img]:https://codecov.io/github/milonoir/yaml_rulz/coverage.svg?branch=master
 [codecov]:https://codecov.io/github/milonoir/yaml_rulz?branch=master
+[pypi img]:https://badge.fury.io/py/yaml-rulz.svg
+[pypi]:https://badge.fury.io/py/yaml-rulz
 [MIT License]:http://www.opensource.org/licenses/mit-license.php
